@@ -3,9 +3,9 @@ import { api } from "@/services/api";
 import { getCoookieServer } from "@/lib/cookieServer";
 import { OrderProps } from "@/lib/order.type"
 
-const token = await getCoookieServer();
+export const runtime = "nodejs";
 
-async function getOrders(): Promise<OrderProps[] | []>{
+async function getOrders(token: string | null): Promise<OrderProps[] | []>{
     try{
         const response = await api.get("/orders", {
             headers:{
@@ -23,9 +23,8 @@ async function getOrders(): Promise<OrderProps[] | []>{
 }
 
 export default async function Dashboard(){
-    const orders = await getOrders();
-
-    
+    const token = await getCoookieServer();
+    const orders = await getOrders(token);
 
     return(
         <>
@@ -33,5 +32,3 @@ export default async function Dashboard(){
         </>
     )
 }
-
-export const runtime = "nodejs";
