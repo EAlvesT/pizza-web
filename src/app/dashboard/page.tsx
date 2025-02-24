@@ -33,3 +33,5 @@ export default async function Dashboard(){
         </>
     )
 }
+
+export const runtime = "nodejs";
