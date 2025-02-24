@@ -1,101 +1,84 @@
-import Image from "next/image";
+import Link from 'next/link';
+import logoImg from '../../public/logo.svg';
+import Image from 'next/image';
+import { api } from '@/services/api';
+import { redirect } from 'next/navigation';
+import { cookies } from 'next/headers';
 
-export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
+export default function Page(){
+  async function handleLogin(formData: FormData){
+    "use server"
+
+    const email = formData.get("email");
+    const password = formData.get("password");
+
+    if(email === "" || password === ""){
+      return;
+    }
+
+    try{
+      const response = await api.post("/session", {
+        email,
+        password
+      })
+
+      if(!response.data.token){
+        return;
+      }
+
+      const expressTime = 60 * 60 * 24 * 30;
+      const cookieStore = await cookies();
+      cookieStore.set("session", response.data.token, {
+        maxAge: expressTime,
+        path: "/",
+        httpOnly: false,
+        secure: process.env.NODE_ENV === "production"
+      })
+
+    }catch(err){
+      console.log(err)
+      return;
+    }
+
+    redirect("/dashboard")
+  }
+
+  return(
+    <>
+      <div className='min-h-screen flex flex-col items-center justify-center'>
         <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
+          src={logoImg}
+          alt='Logo da pizzaria'
         />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+        <section className='mt-6 flex flex-col items-center justify-center gap-4 w-[600px] max-[620px]:w-11/12'>
+          <form className='text-[var(--white)] pb-4 text-lg flex flex-col w-11/12 gap-4' action={handleLogin}>
+            <input
+              type='email'
+              required
+              name='email'
+              placeholder='Digite seu email...'
+              className='h-[var(--alturaInputeBotao)] py-0 px-4 rounded-lg border border-[var(--gray-100)] bg-[var(--dark-900)] text-[var(--white)] placeholder:text-[rgba(255,255,255,0.700)]'
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+
+            <input
+              type='password'
+              required
+              name='password'
+              placeholder='Digite sua senha...'
+              className='h-[var(--alturaInputeBotao)] py-0 px-4 rounded-lg border border-[var(--gray-100)] bg-[var(--dark-900)] text-[var(--white)] placeholder:text-[rgba(255,255,255,0.700)]'
+            />
+
+            <button type='submit' className='h-[var(--alturaInputeBotao)] text-[16px] bg-[var(--red-900)] rounded-lg text-[var(--white)] font-bold flex items-center justify-center hover:scale-[1.05] duration-300'>
+              Acessar
+            </button>
+          </form>
+
+          <Link href="/signup" className='text-[var(--white)]'>
+            Não tem uma conta? Cadastre-se...
+          </Link>
+        </section>
+      </div>
+    </>
+  )
 }
